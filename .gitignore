@@ -35,6 +35,3 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# ---- 本地私有资料 ----
-# 记录了真实服务器操作过程与真实玩家 IP 的笔记，只在本机保留。
-ipset优化UFW方案.md

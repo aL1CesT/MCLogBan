@@ -38,12 +38,15 @@ TARGETS = [
     "SFTP 通道本次连接内已弃用",
     # 部署向导单步超时提示
     "已等待超过",
+    # 窗口几何修复：merge_defaults 的 docstring（该函数本轮重写过）
+    "把用户配置合并进默认结构：缺的补上，类型不对的回退默认值。",
     # 关窗后工作线程投递的存活判断
     "_step_watchdog",
     # 向导重检后要把结论回传主窗口
     "把体检结论回传给主窗口",
 ]
-MODULES = ["mclogban.deploy", "mclogban.remote", "mclogban.deploy_ui"]
+MODULES = ["mclogban.deploy", "mclogban.remote", "mclogban.deploy_ui",
+           "mclogban.config"]
 
 
 def _walk(node, out: list[str], keep: list) -> None:

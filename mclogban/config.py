@@ -67,7 +67,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "output": {"dir": "out", "open_after_export": True},
     "geo": {"xdb_path": ""},
     "ui": {"dry_run_default": True, "theme": "dark", "window_geometry": "",
-           "geometry_scale": 0},
+           # 缩放比是 0.8~3.0 的浮点数。早期写成 int 0，merge_defaults 的 int 分支
+           # 会把存档的 1.25 截断成 1，恢复几何时 k=1.25/1，窗口每启动一次放大
+           # 一圈——这就是「关了再开，窗口越来越大」的根因。
+           "geometry_scale": 0.0},
 }
 
 
@@ -215,9 +218,11 @@ def merge_defaults(data: Any) -> dict[str, Any]:
                     if isinstance(sub_default, bool):
                         if isinstance(sub_value, bool):
                             merged[key][sub_key] = sub_value
-                    elif isinstance(sub_default, int):
+                    elif isinstance(sub_default, (int, float)) and not isinstance(sub_default, bool):
                         if isinstance(sub_value, (int, float)) and not isinstance(sub_value, bool):
-                            merged[key][sub_key] = int(sub_value)
+                            # default 是 float 时保留浮点（geometry_scale 之类），int 才取整
+                            merged[key][sub_key] = (
+                                sub_value if isinstance(sub_default, float) else int(sub_value))
                     elif isinstance(sub_default, str):
                         if isinstance(sub_value, str):
                             merged[key][sub_key] = sub_value
@@ -229,9 +234,9 @@ def merge_defaults(data: Any) -> dict[str, Any]:
         elif isinstance(default, bool):
             if isinstance(value, bool):
                 merged[key] = value
-        elif isinstance(default, int):
+        elif isinstance(default, (int, float)) and not isinstance(default, bool):
             if isinstance(value, (int, float)) and not isinstance(value, bool):
-                merged[key] = int(value)
+                merged[key] = value if isinstance(default, float) else int(value)
         elif isinstance(default, str):
             if isinstance(value, str):
                 merged[key] = value
