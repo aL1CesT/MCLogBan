@@ -650,7 +650,7 @@ def plan_steps(health: Health, set_name: str, ipset_conf: str,
     anchor_pat = f"-e '^{END_INIT}$' -e '^COMMIT$'"
     rule_checks: list[str] = []
     if not needs_ufw:
-        rule_checks = [f"test -d /etc/ufw", f"test -s {BEFORE_RULES}",
+        rule_checks = ["test -d /etc/ufw", f"test -s {BEFORE_RULES}",
                        f"grep -q {anchor_pat} {BEFORE_RULES}"]
         if need_v6:
             rule_checks += [f"test -s {BEFORE6_RULES}",
@@ -724,7 +724,18 @@ def plan_steps(health: Health, set_name: str, ipset_conf: str,
     else:
         install_title = "② 安装 ipset"
         install_detail = "用系统包管理器安装 ipset。不刷新包索引；索引过期会原样报错。"
-        install_cmds = [install_command(pkgmgr, ["ipset"])] if needs_install else []
+        install_cmds = []
+        if needs_install:
+            cmd = install_command(pkgmgr, ["ipset"])
+            if cmd:
+                install_cmds = [cmd]
+            else:
+                # ufw 已就绪时预检不查包管理器，走到这里才发现拼不出安装命令。
+                # 给一条必然失败、且写明原因的命令，而不是让空串「执行成功」。
+                install_detail += (
+                    f" 未识别到系统包管理器（apt-get / dnf / yum 都不存在），"
+                    f"无法自动安装；请手工安装 ipset 后重试。")
+                install_cmds = ["sh -c 'echo \"未识别系统包管理器，无法自动安装 ipset\" >&2; exit 1'"]
         install_checks = ["command -v ipset"]
         install_optional = not needs_install
         install_skip = "" if needs_install else "已安装"

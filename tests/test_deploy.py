@@ -414,6 +414,30 @@ def test_plan_steps_skips_v6_when_ipv6_disabled() -> None:
     assert not any(D.BEFORE6_RULES in c for c in steps["reload"].rollback)
 
 
+def test_plan_steps_install_fails_loudly_when_pkgmgr_unknown() -> None:
+    """ufw 已就绪但包管理器识别不出来时，ipset 安装步不能下发空命令。
+
+    空串命令在 ``run_step`` 里会被当作「执行成功」，安装结果无从判断；
+    必须换成一条必然失败、且写明原因的命令。
+    """
+    h = D.assess(_values(ipset="", pkgmgr="none"))
+    steps = {s.sid: s for s in D.plan_steps(h, "s", "/etc/ipset.conf")}
+    install = steps["install"]
+    assert len(install.commands) == 1
+    assert "未识别系统包管理器" in install.commands[0]
+    assert "exit 1" in install.commands[0]
+    assert "手工安装" in install.detail
+
+
+def test_plan_steps_install_uses_detected_pkgmgr() -> None:
+    """探针认到 dnf 就下发 dnf 命令，不回落成 apt-get。"""
+    h = D.assess(_values(ipset="", ufw_bin="", ufw="", pkgmgr="dnf"))
+    steps = {s.sid: s for s in D.plan_steps(h, "s", "/etc/ipset.conf")}
+    joined = " ".join(steps["install"].commands)
+    assert "dnf install -y" in joined
+    assert "apt-get" not in joined
+
+
 def test_plan_steps_install_does_not_update_index() -> None:
     h = D.assess(_values(ipset=""))
     steps = {s.sid: s for s in D.plan_steps(h, "s", "/etc/ipset.conf")}
