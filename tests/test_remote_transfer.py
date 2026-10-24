@@ -162,6 +162,9 @@ class _SilentChannel:
         time.sleep(60)
         return b""
 
+    #: run() 会记录 stdout.channel 以便超时时关闭；假对象也得名实相符。
+    channel = None
+
 
 class _SilentClient:
     def exec_command(self, command: str, timeout=None):

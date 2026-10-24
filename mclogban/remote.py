@@ -89,6 +89,8 @@ class SSHConfig:
     audit_log: str = "/etc/mclogban/audit.log"
     backup_dir: str = "/etc/mclogban/backup"
     backup_keep: int = 10
+    #: 部署日志路径。配置里 deploy.deploy_log 缺省时回落到 deploy 模块常量。
+    deploy_log: str = ""
 
     @classmethod
     def from_config(cls, cfg: dict) -> "SSHConfig":
@@ -112,6 +114,7 @@ class SSHConfig:
             audit_log=remote.get("audit_log", "/etc/mclogban/audit.log") or "/etc/mclogban/audit.log",
             backup_dir=remote.get("backup_dir", "/etc/mclogban/backup") or "/etc/mclogban/backup",
             backup_keep=int(cfg.get("deploy", {}).get("backup_keep", 10) or 10),
+            deploy_log=str(cfg.get("deploy", {}).get("deploy_log", "") or ""),
         )
 
     def describe(self) -> str:
@@ -156,7 +159,21 @@ def build_plan(
     backup_dir: str,
     also_delete: list[str] | None = None,
 ) -> BanPlan:
-    """根据「想封的」与「远端已有的」算出 add / del 列表与命令文本。"""
+    """根据「想封的」与「远端已有的」算出 add / del 列表与命令文本。
+
+    每个地址先过 :func:`ipaddress.ip_address`：restore 文件是逐行执行的
+    ipset 指令源，一行 ``add s x
+flush`` 就能构造任意指令，这里只收
+    合法 IP 是最窄的闸口。
+    """
+    import ipaddress
+
+    for ip in list(wanted) + list(also_delete or []):
+        if ip:
+            try:
+                ipaddress.ip_address(ip.strip())
+            except ValueError as exc:
+                raise RemoteError(f"IP 不合法，已中止封禁：{ip!r}（{exc}）") from exc
     remote_set = set(remote_members)
     wanted_uniq = list(dict.fromkeys(ip for ip in wanted if ip))
     to_add = [ip for ip in wanted_uniq if ip not in remote_set]
@@ -371,6 +388,7 @@ class RemoteClient:
         def work() -> None:
             try:
                 stdin, stdout, stderr = self._client.exec_command(full, timeout=limit)
+                box["channel"] = stdout.channel
                 if feed_password:
                     stdin.write(self._sudo_password + "\n")
                     stdin.flush()
@@ -384,6 +402,14 @@ class RemoteClient:
         worker.start()
         worker.join(limit + self.DEADLINE_GRACE)
         if worker.is_alive():
+            # worker 还挂在 stdout.read() 上，daemon 线程拦不住它；但 exec
+            # 通道可以关：close 让 read 立刻返回 EOF，线程随即退出，不再堆积。
+            chan = box.get("channel")
+            if chan is not None:
+                try:
+                    chan.close()
+                except Exception:  # noqa: BLE001 —— 已超时，关不上也无所谓
+                    pass
             raise RemoteError(
                 f"命令超过 {limit + self.DEADLINE_GRACE} 秒未返回，已放弃等待。\n"
                 f"常见原因：远端进程在等交互输入（sudo 密码、apt 确认）、"
@@ -481,10 +507,12 @@ class RemoteClient:
     def deploy_log(self, record: dict) -> None:
         """往远端 ``deploy.log`` 追加一行 JSON（JSONL），失败不抛。"""
         line = json.dumps(record, ensure_ascii=False) + "\n"
-        directory = posixpath.dirname(deploy_mod.DEPLOY_LOG)
+        target = (self.cfg.deploy_log
+                  if getattr(self.cfg, "deploy_log", "") else deploy_mod.DEPLOY_LOG)
+        directory = posixpath.dirname(target)
         b64 = __import__("base64").b64encode(line.encode("utf-8")).decode()
         self.run(f"mkdir -p {directory} && printf '%s' '{b64}' | base64 -d >> "
-                 f"{deploy_mod.DEPLOY_LOG}", check=False)
+                 f"{target}", check=False)
 
     # ------------------------------------------------------------ 部署执行
     def read_optional(self, remote_path: str) -> str:
@@ -522,6 +550,10 @@ class RemoteClient:
         # 文件替换成不完整内容，之后 ufw reload 才报语法错误，现场很难对上因。
         expected = len(text.encode("utf-8"))
         code, out, _ = self.run(f"wc -c < {tmp}", use_sudo=False, check=False)
+        if code != 0 and not self._is_root:
+            # 非 root 时 /etc/ufw 下的临时文件可能不可读。校验恰好在这种
+            # 场景最关键（写的是规则文件），换提权重查一次，而不是静默放过。
+            code, out, _ = self.run(f"wc -c < {tmp}", use_sudo=True, check=False)
         if code == 0 and out.strip().isdigit() and int(out.strip()) != expected:
             self.run(f"rm -f {tmp}", check=False)
             raise RemoteError(

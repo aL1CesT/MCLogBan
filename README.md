@@ -475,7 +475,7 @@ MCLogBan/
 │   ├── icon.png            程序图标（256×256，Minecraft 草方块）
 │   ├── icon.ico            多尺寸 ico（exe 文件图标：16/24/32/48/64/128/256）
 │   └── ip2region_v4.xdb    内置归属地库（约 11MB）
-├── tests/                  单元测试（192 个）
+├── tests/                  单元测试（205 个）
 └── tools/
     ├── _logdir.py          日志目录探测（MCLOGBAN_LOG_DIR 环境变量优先）
     ├── gui_demo.py         界面驱动脚本（开发用）
@@ -619,7 +619,7 @@ python tools\release_check.py      :: 发布前终检（真实 IP / 玩家名 / 
 ```
 
 ```
-192 passed
+205 passed
 ```
 
 覆盖：日志解析（时间戳、PROXY、登录、验证失败、UUID、断连）、判定规则（时间窗、阈值、

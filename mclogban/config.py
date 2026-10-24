@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import copy
+import re
 import json
 import os
 import sys
@@ -243,6 +244,13 @@ def merge_defaults(data: Any) -> dict[str, Any]:
     return merged
 
 
+# 远端 shell 与规则文件里允许出现的字符。集合名与路径分开校验：
+# 集合名是 ipset 名（字母/数字开头，含 _ . -）；路径是绝对路径。
+# 空格、分号、反引号、$ 等一概拒绝，注入无从谈起。
+_SET_NAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,30}")
+_REMOTE_PATH_RE = re.compile(r"/[A-Za-z0-9_./-]{0,127}")
+
+
 def validate(cfg: dict[str, Any]) -> list[str]:
     """基本合法性检查，返回中文问题列表（空表示没问题）。"""
     problems: list[str] = []
@@ -260,6 +268,23 @@ def validate(cfg: dict[str, Any]) -> list[str]:
     dep = cfg.get("deploy", {})
     if int(dep.get("backup_keep", 10)) < 1:
         problems.append("部署备份保留份数至少为 1")
+    # 这些值会原样拼进远端 shell 命令（ipset list/create、before.rules、
+    # restore 文件）。配置文件可能来自别人分享，这里必须当不可信输入对待。
+    set_name = str(cfg.get("remote", {}).get("set_name", "") or "")
+    if set_name and not _SET_NAME_RE.fullmatch(set_name):
+        problems.append(
+            "集合名只能以字母或数字开头，包含字母、数字、_ . -，最长 31 字符: "
+            + set_name)
+    for section, key, label in (
+        ("remote", "ipset_conf", "ipset 配置路径"),
+        ("remote", "audit_log", "审计日志路径"),
+        ("remote", "backup_dir", "备份目录"),
+        ("deploy", "deploy_log", "部署日志路径"),
+    ):
+        value = str(cfg.get(section, {}).get(key, "") or "")
+        if value and not _REMOTE_PATH_RE.fullmatch(value):
+            problems.append(
+                f"{label}必须是 / 开头的绝对路径，只含字母、数字、_ . / -: {value}")
     return problems
 
 
