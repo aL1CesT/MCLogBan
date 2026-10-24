@@ -110,7 +110,7 @@ def check(exe: str) -> int:
 
 
 def main(argv: list[str]) -> int:
-    exe = argv[1] if len(argv) > 1 else os.path.join("dist", "MCLogBan-便携版.exe")
+    exe = argv[1] if len(argv) > 1 else os.path.join("dist", "MCLogBan-Portable.exe")
     return check(exe)
 
 

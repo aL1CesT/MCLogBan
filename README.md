@@ -28,7 +28,7 @@
 
 | 方式 | 适用场景 | 做法 |
 |---|---|---|
-| 免安装 | 只想用，不改代码 | 下载 Release 里的 `MCLogBan-便携版.exe`，双击运行 |
+| 免安装 | 只想用，不改代码 | 下载 Release 里的 `MCLogBan-Portable.exe`，双击运行 |
 | 源码运行 | 想调整判定规则或界面 | 见下 |
 | 命令行 | 挂定时任务、写脚本 | `MCLogBan.exe --cli …`，见第七节 |
 
@@ -516,7 +516,7 @@ python -m PyInstaller build.spec --noconfirm --clean
 | 产物 | 说明 |
 |---|---|
 | `dist\MCLogBan\MCLogBan.exe` | onedir 版，启动快，推荐日常用 |
-| `dist\MCLogBan-便携版.exe` | onefile 版，单文件约 23MB，方便丢到别的机器 |
+| `dist\MCLogBan-Portable.exe` | onefile 版，单文件约 23MB，方便丢到别的机器 |
 
 ip2region 数据库已经打进包里，**不需要额外拷 xdb**。
 如果想让程序优先读外置库，把 `ip2region_v4.xdb` 放在 exe 同级目录即可（方便热更新）。

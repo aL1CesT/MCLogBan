@@ -12,7 +12,7 @@
 
 | 文件 | 适合 |
 |---|---|
-| `MCLogBan-便携版.exe` | 单文件，下载即用，不用安装 |
+| `MCLogBan-Portable.exe` | 单文件，下载即用，不用安装 |
 | `MCLogBan-onedir.zip` | 解压后启动更快；单文件版偶发被杀软误报时的替代选择 |
 
 两个包内置 `ip2region_v4.xdb` 归属地库，无需额外下载。
@@ -41,9 +41,9 @@
 命令行同样可用：
 
 ```
-MCLogBan-便携版.exe --cli analyze --dir C:\mc\logs --only abnormal
-MCLogBan-便携版.exe --cli push --txt out\ban_candidates.txt
-MCLogBan-便携版.exe --cli deploy --check
+MCLogBan-Portable.exe --cli analyze --dir C:\mc\logs --only abnormal
+MCLogBan-Portable.exe --cli push --txt out\ban_candidates.txt
+MCLogBan-Portable.exe --cli deploy --check
 ```
 
 完整说明见 [README](https://github.com/aL1CesT/MCLogBan#readme)：判定规则、部署细节、卸载与迁移、11 条 FAQ。

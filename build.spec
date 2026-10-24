@@ -3,7 +3,7 @@
 
 产出两个版本：
   dist/MCLogBan/            onedir 版（启动快，推荐日常用）
-  dist/MCLogBan-便携版.exe   onefile 版（单个文件，方便丢到别的机器）
+  dist/MCLogBan-Portable.exe   onefile 版（单个文件，方便丢到别的机器）
 
 内置 ip2region_v4.xdb（约 11 MB），所以程序不依赖外部数据文件；
 仍然优先读取 exe 同级的 xdb，方便以后热更新库文件。
@@ -121,7 +121,7 @@ exe_one = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="MCLogBan-便携版",
+    name="MCLogBan-Portable",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

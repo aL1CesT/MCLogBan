@@ -36,7 +36,7 @@ jobs:
       - name: 打包
         run: python -m PyInstaller --noconfirm --clean build.spec
 
-      # 便携版单文件 exe；onedir 目录一并压成 zip 方便不想解压的用户
+      # Portable 单文件 exe；onedir 目录一并压成 zip 方便不想解压的用户
       - name: 整理产物
         shell: pwsh
         run: |
@@ -49,7 +49,7 @@ jobs:
         with:
           name: MCLogBan-windows
           path: |
-            dist/MCLogBan-便携版.exe
+            dist/MCLogBan-Portable.exe
             dist/MCLogBan-onedir.zip
           retention-days: 14
 
@@ -58,6 +58,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/MCLogBan-便携版.exe
+            dist/MCLogBan-Portable.exe
             dist/MCLogBan-onedir.zip
           generate_release_notes: true
