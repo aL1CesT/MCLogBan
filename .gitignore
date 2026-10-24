@@ -1,0 +1,40 @@
+# ---- 运行产物 ----
+# config.json 是程序首次启动时自动生成的配置，内含上次扫描的目录、服务器指纹等本机信息。
+# 提交它会把这些信息带给所有人，且首次克隆后指纹校验会失败。
+config.json
+config.bad-*
+
+# 封禁候选与报告的输出目录
+out/
+
+# 远端操作审计、调试日志
+logs/
+
+# 截图与演示素材（体积大、随界面改动迅速失效）
+shots/
+
+# ---- 打包产物 ----
+build/
+dist/
+*.spec.bak
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- 编辑器与系统 ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- 本地私有资料 ----
+# 记录了真实服务器操作过程与真实玩家 IP 的笔记，只在本机保留。
+ipset优化UFW方案.md

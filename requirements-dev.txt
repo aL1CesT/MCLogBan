@@ -1,0 +1,6 @@
+# 开发与打包依赖（运行程序本身不需要这些）
+-r requirements.txt
+
+pytest>=8.0            # 单元测试
+pyinstaller>=6.10      # 打包为 exe（build.spec）
+pillow>=10.0           # tools/ 下的图标合成与截图裁剪，不进打包产物

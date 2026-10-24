@@ -1,0 +1,11 @@
+# 统一以 LF 存进仓库，检出时按平台还原
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制：不做换行符转换，也不生成文本 diff
+*.xdb binary
+*.png binary
+*.ico binary
+*.exe binary
+*.zip binary

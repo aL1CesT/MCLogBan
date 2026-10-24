@@ -1,0 +1,3 @@
+# 运行依赖（只有两个，其余全部来自标准库）
+paramiko>=3.4          # SSH 连接、命令执行、SFTP 传输、主机指纹校验
+py-ip2region>=3.0      # 离线 IP 归属地查询，读取 assets/ip2region_v4.xdb
