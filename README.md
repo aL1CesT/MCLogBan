@@ -495,7 +495,8 @@ MCLogBan/
     ├── health_shot.py      横幅联动截图
     ├── refresh_probe.py    刷新与推送触发体检自检
     ├── png_ascii.py        PNG 粗采样成字符图（无图像查看能力时核对布局）
-    └── dpi_selftest.py     1.0/1.25/1.5/1.75/2.0 五档布局自检
+    ├── dpi_selftest.py     1.0/1.25/1.5/1.75/2.0 五档布局自检
+    └── release_check.py    发布前终检（敏感信息残留、仓库形态）
 ```
 
 `tools/` 下的脚本是开发期自检与截图工具，不参与程序运行。依赖真实显示器或真实服务器的那几个
@@ -612,6 +613,7 @@ python tools\post_after_close.py   :: 关窗后工作线程投递安全性
 python tools\health_callback.py    :: 体检结论回传回调契约
 python tools\health_wire.py        :: 主窗口横幅随复检更新
 python tools\refresh_probe.py      :: 刷新与推送都触发体检
+python tools\release_check.py      :: 发布前终检（真实 IP / 玩家名 / 本机路径残留）
 ```
 
 ```
